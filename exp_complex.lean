@@ -23,7 +23,7 @@ lemma pow_incrs_of_gt_one {α : Type*}  [linear_ordered_semiring α] {x : α} {n
   cases n with n',
   simp!, simp! at hi,
   rw ←one_mul (1 : α),
-  refine mul_lt_mul x1 (le_of_lt (@hi 0 dec_trivial)) (by norm_num) (le_of_lt(lt_trans (by norm_num) x1)),
+  exact mul_lt_mul x1 (le_of_lt (@hi 0 dec_trivial)) (by norm_num) (le_of_lt(lt_trans (by norm_num) x1)),
   have hi' := @hi n' (lt_of_succ_lt_succ nm),
   suffices : x * monoid.pow x n' < x * monoid.pow x (succ m''),
     simpa [monoid.pow],
@@ -31,14 +31,14 @@ lemma pow_incrs_of_gt_one {α : Type*}  [linear_ordered_semiring α] {x : α} {n
   clear hi hi' nm m'',
   induction n' with n'' hi,
   simp!,norm_num,
-  simp!,refine mul_nonneg (le_of_lt (lt_trans (by norm_num) x1)) hi,
+  simp!,exact mul_nonneg (le_of_lt (lt_trans (by norm_num) x1)) hi,
 end
 
 lemma pow_dcrs_of_lt_one_of_pos {α : Type*}  [discrete_linear_ordered_field α] {x : α} {n m : ℕ} : x < 1 → 0 < x → n < m → monoid.pow x m < monoid.pow x n := begin
   assume x1 x0 nm,rw [←inv_lt_inv,pow_inv',pow_inv'],
   have x11 : 1 < x⁻¹ ,rw lt_inv,simpa,{norm_num},exact x0,
-  refine pow_incrs_of_gt_one x11 nm,
-  refine pow_pos x0 _,refine pow_pos x0 _,
+  exact pow_incrs_of_gt_one x11 nm,
+  exact pow_pos x0 _,exact pow_pos x0 _,
 end
 
 lemma pow_unbounded_of_gt_one {x : ℝ} (y : ℝ) : 1 < x → ∃ n : ℕ, y < monoid.pow x n := begin
@@ -59,13 +59,15 @@ lemma pow_unbounded_of_gt_one {x : ℝ} (y : ℝ) : 1 < x → ∃ n : ℕ, y < m
   exact lt_trans hn (this n).left,rwa sub_pos,
 end
 
+-- defined myself rather than using finset.sum due to ease of inductive proofs. May have been better to prove
+-- an induction theorem on finset.sum instead, that way having access to proofs about finset sum
 def series {α : Type*} [has_add α] [has_zero α] (f : ℕ → α) : ℕ → α 
 | 0        := 0
 | (succ n) := series n + f n
 
-lemma series_nonneg {α : Type*} [linear_ordered_semiring α] {f : ℕ → α} (n : ℕ) : (∀ m : ℕ, 0 ≤ f m) → 0 ≤ series f n := begin
+lemma series_nonneg {α : Type*} [linear_ordered_semiring α] {f : ℕ → α} (n : ℕ) : (∀ m ≤ n, 0 ≤ f m) → 0 ≤ series f n := begin
   assume h,induction n with n' hi,
-  simp!,simp!,exact add_nonneg (h n') hi,
+  simp!,exact add_nonneg (hi (λ m hm, h m (le_succ_of_le hm))) (h n' (le_succ _)),
 end
 
 lemma series_mul {α : Type*} [semiring α] (f : ℕ → α) (a : α) (n : ℕ) : a * series f n = series (λ m, a * f m) n := begin
@@ -73,29 +75,16 @@ lemma series_mul {α : Type*} [semiring α] (f : ℕ → α) (a : α) (n : ℕ) 
   simp!,simp!,rw [mul_add,hi],
 end
 
-lemma series_incrs_of_nonneg {α : Type*} [linear_ordered_semiring α] {f : ℕ → α} (i j : ℕ) : (∀ m, i ≤ m → 0 ≤ f m) → i ≤ j → series f i ≤ series f j := begin
-  assume h ij,
-  generalize hk : j - i = k,revert i j,
-  induction k with k' hi,
-  assume i j h ij hk,
-  rw nat.sub_eq_zero_iff_le at hk, replace ij := le_antisymm hk ij,rw ij,
-  assume i j h ij hk,have ik : i ≤ k' + i,rw ←zero_add i,refine add_le_add _ _,exact zero_le _,simp,
-  have := hi i (k' + i) h ik (by rw nat.add_sub_cancel),
-  rw [nat.sub_eq_iff_eq_add ij,succ_add] at hk,rw hk,simp!,
-  refine le_trans this _,
-  rw ←zero_add (series f (k' + i)),refine add_le_add _ _,refine h _ ik,simp,
-end
-
-lemma geometric_series_eq (n : ℕ) (x : ℝ) : x ≠ 1 → series (monoid.pow x) n = (1 - monoid.pow x n) / (1 - x) := begin
+lemma geo_series_eq (x : ℝ) (n : ℕ) : x ≠ 1 → series (monoid.pow x) n = (1 - monoid.pow x n) / (1 - x) := begin
   assume x1,have x1' : 1 + -x ≠ 0,assume h,rw [eq_comm, ←sub_eq_iff_eq_add] at h,simp at h,trivial,
   induction n with n' hi,
   simp!,rw eq_div_iff_mul_eq,simpa,
   simp!,rw hi,simp, rw [add_mul,div_mul_cancel _ x1',mul_add],ring,simp [x1'],
 end
 
-lemma geometric_series_cauchy (x : ℝ) : abs x < 1 → is_cau_seq abs (series (monoid.pow x)) := begin
+lemma geo_series_cau (x : ℝ) : abs x < 1 → is_cau_seq abs (series (monoid.pow x)) := begin
   assume x1, have : series (monoid.pow x) = λ n,(1 - monoid.pow x n) / (1 - x),
-    apply funext,assume n,refine geometric_series_eq n x _ ,assume h, rw h at x1,exact absurd x1 (by norm_num),rw this,
+    apply funext,assume n,refine geo_series_eq x n _ ,assume h, rw h at x1,exact absurd x1 (by norm_num),rw this,
   have absx : 0 < abs (1 - x),refine abs_pos_of_ne_zero _,assume h,rw sub_eq_zero_iff_eq at h,rw ←h at x1,
   have : ¬abs (1 : ℝ) < 1,norm_num,trivial,simp at absx,
   cases classical.em (x = 0),rw h,simp[monoid.pow],assume ε ε0,existsi 1,assume j j1,simpa!,
@@ -113,23 +102,19 @@ lemma geometric_series_cauchy (x : ℝ) : abs x < 1 → is_cau_seq abs (series (
   refine add_le_add _ _,rw ←pow_abs,
   rw [abs_neg,←pow_abs],
   cases lt_or_eq_of_le ji,
-  refine le_of_lt (pow_dcrs_of_lt_one_of_pos x1 (abs_pos_of_ne_zero h) h_1),
+  exact le_of_lt (pow_dcrs_of_lt_one_of_pos x1 (abs_pos_of_ne_zero h) h_1),
   rw h_1,assumption,
   refine div_pos _ _,{norm_num},
   refine mul_pos ε0 _,simpa,
-  refine pow_pos (abs_pos_of_ne_zero h) _,
+  exact pow_pos (abs_pos_of_ne_zero h) _,
 end
 
-lemma geometric_series_const_cau (a x : ℝ) : abs x < 1 → is_cau_seq abs (series (λ n, a * monoid.pow x n)) := begin
+lemma geo_series_const_cau (a x : ℝ) : abs x < 1 → is_cau_seq abs (series (λ n, a * monoid.pow x n)) := begin
   assume x1 ε ε0,
   cases classical.em (a = 0),
   existsi 0,intros,rw [←series_mul],induction j,simp!,assumption,rw h,simpa!,
-  cases geometric_series_cauchy x x1 (ε / abs a) (div_pos ε0 (abs_pos_of_ne_zero h)) with i hi,
+  cases geo_series_cau x x1 (ε / abs a) (div_pos ε0 (abs_pos_of_ne_zero h)) with i hi,
   existsi i,assume j ji,rw [←series_mul,←series_mul,←mul_sub,abs_mul,mul_comm,←lt_div_iff],exact hi j ji,exact abs_pos_of_ne_zero h,
-end
-
-lemma is_absolute_value.pow_abs (z : ℂ) (n : ℕ) : monoid.pow (complex.abs z) n = complex.abs (monoid.pow z n) := begin
- induction n with n' hi,simp,simp!,rw hi,
 end
 
 lemma series_cau_of_abv_le_cau {α β : Type*} [discrete_linear_ordered_field α] [ring β] {f : ℕ → β} {g : ℕ → α} {abv : β → α} [is_absolute_value abv] (n : ℕ) : (∀ m, n ≤ m → abv (f m) ≤ g m) → is_cau_seq abs (series g) → is_cau_seq abv (series f) := begin
@@ -158,15 +143,15 @@ lemma series_cau_of_abv_le_cau {α β : Type*} [discrete_linear_ordered_field α
 end
 
 -- The form of ratio test with  0 ≤ r < 1, and abv (f (succ m)) ≤ r * abv (f m) handled zero terms of series the best
-lemma series_ratio_test {α : Type*} [ring α] {abv : α → ℝ} [is_absolute_value abv] {f : ℕ → α} (n : ℕ) (r : ℝ) : 0 ≤ r → r < 1 → (∀ m, n ≤ m → abv (f (succ m)) ≤ r * abv (f m) ) → is_cau_seq abv (series f) := begin
+lemma series_ratio_test {α : Type*} [ring α] {abv : α → ℝ} [is_absolute_value abv] {f : ℕ → α} (n : ℕ) (r : ℝ) : 0 ≤ r → r < 1 → (∀ m, n ≤ m → abv (f (succ m)) ≤ r * abv (f m)) → is_cau_seq abv (series f) := begin
   assume r0 r1 h,
-  refine series_cau_of_abv_le_cau (succ n) _ (geometric_series_const_cau (abv (f (succ n)) * monoid.pow r⁻¹ (succ n)) r _),
+  refine series_cau_of_abv_le_cau (succ n) _ (geo_series_const_cau (abv (f (succ n)) * monoid.pow r⁻¹ (succ n)) r _),
   assume m mn,
   generalize hk : m - (succ n) = k,rw nat.sub_eq_iff_eq_add mn at hk,
   cases classical.em (r = 0) with r_zero r_pos,have m_pos := lt_of_lt_of_le (succ_pos n) mn,
   have := pred_le_pred mn,simp at this,
   have := h (pred m) this,simp[r_zero,succ_pred_eq_of_pos m_pos] at this,
-  refine le_trans this _,refine mul_nonneg _ _,refine mul_nonneg (abv_nonneg _ _) (pow_nonneg (inv_nonneg.mpr r0) _),refine pow_nonneg r0 _,
+  refine le_trans this _,refine mul_nonneg _ _,refine mul_nonneg (abv_nonneg _ _) (pow_nonneg (inv_nonneg.mpr r0) _),exact pow_nonneg r0 _,
   replace r_pos : 0 < r,cases lt_or_eq_of_le r0 with h h,exact h,exact absurd h.symm r_pos,
   revert m n,
   induction k with k' hi,assume m n h mn hk,
@@ -195,11 +180,31 @@ lemma complex.exp_series_cau (x : ℂ) : is_cau_seq complex.abs (series (λ m, m
   exact complex.abs_nonneg _,rw[←nat.cast_zero,nat.cast_le],exact zero_le _,
 end
 
-def exp (z : ℂ) : ℂ := complex.lim (series (λ m, monoid.pow z m / fact m))
+def exp (z : ℂ) : ℂ := complex.lim (series (λ n, monoid.pow z n / fact n))
 
-lemma exp_zero : exp 0 = 1 := begin
-  unfold exp,
-  have hlim := complex.equiv_lim ⟨(series (λ (m : ℕ), monoid.pow (0 : ℂ) m / ↑(fact m))),complex.exp_series_cau (0 : ℂ)⟩,
-  suffices : cau_seq.const complex.abs (1 : ℂ) ≈ ⟨series (λ (m : ℕ), monoid.pow 0 m / ↑(fact m)), _⟩,
-    have := setoid.trans this hlim, rw cau_seq.const_equiv at this,
+def sin (z : ℂ) : ℂ := (exp (⟨0, 1⟩ * z) - exp (-⟨0, 1⟩ * z)) / (2 * ⟨0, 1⟩)
+
+def cos (z : ℂ) : ℂ := (exp (⟨0, 1⟩ * z) + exp (-⟨0, 1⟩ * z)) / 2
+
+def tan (z : ℂ) : ℂ := sin z / cos z
+
+def sinh (z : ℂ) : ℂ := (exp z - exp (-z)) / 2
+
+def cosh (z : ℂ) : ℂ := (exp z + exp (-z)) / 2
+
+def tanh (z : ℂ) : ℂ := sinh z / cosh zero
+
+lemma complex.lim_const {f : ℕ → ℂ} (hf : is_cau_seq complex.abs f) (z : ℂ) : z = complex.lim f ↔ cau_seq.const complex.abs z ≈ ⟨f, hf⟩ := sorry
+
+lemma complex.lim_mul {f g : ℕ → ℂ} : is_cau_seq complex.abs f → is_cau_seq complex.abs g → complex.lim f * complex.lim g = complex.lim (λ z, f z * g z) := sorry
+
+@[simp] lemma exp_zero : exp 0 = 1 := begin
+  unfold exp,rw [eq_comm,complex.lim_const (complex.exp_series_cau 0)],
+  assume ε ε0,existsi 1,assume j j1,
+  induction j with j' hi,exact absurd j1 dec_trivial,
+  cases j' with j₂,simpa!,replace hi := hi dec_trivial,simp! at *,assumption,
+end
+
+lemma exp_mul (a b : ℂ) : ∀ ε > 0, ∃ i : ℕ, ∀ j ≥ i, complex.abs (series (λ m, monoid.pow a m / fact m) i * series (λ m, monoid.pow b m / fact m) i - series (λ m, monoid.pow (a + b) m / fact m) i) < ε := begin
+  assume ε ε0,
 end

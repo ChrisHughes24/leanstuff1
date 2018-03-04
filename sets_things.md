@@ -38,7 +38,7 @@ def S : set ℕ := {n : ℕ | 4 ≤ n}
 example : ∀ n : S, 4 ≤ (n : ℕ) := λ ⟨n, hn⟩, hn
 ```
 
-Subtypes are often useful for defining functions between sets. It is often useful to define sets as sets, and then coerce them into subtypes whenever necessary.
+It is useful to use a subtype rather than a set when you need to define functions on subtypes, or when using the cardinal of a subtype.
 
 ### fintype ###
 #### data.fintype ####

@@ -1,4 +1,4 @@
-# Maths in lean : sets
+# Maths in lean : set-like objects
 
 ### lists ###
 #### data.list.basic ####

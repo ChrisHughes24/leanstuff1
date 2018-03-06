@@ -1,8 +1,8 @@
-# Set like objects in lean #
+# Maths in lean : sets
 
 ### lists ###
 #### data.list.basic ####
-`list α` is the type of lists of elements of type α. Lists are finite and ordered, and can contain duplicates. Lists can only contain elements of the same type. Lists are constructed using the cons function, which appends an elements of α to the top of a list. Lists are discussed in more detail in TPIL, chapter 7.5
+`list α` is the type of lists of elements of type α. Lists are finite and ordered, and can contain duplicates. Lists can only contain elements of the same type. Lists are constructed using the cons function, which appends an element of α to the top of a list. Lists are discussed in more detail in TPIL, chapter 7.5
 
 `[1, 1, 2, 4] ≠ [1, 2, 1, 4]`
 
@@ -26,14 +26,13 @@
 
 ### sets and subtypes ###
 #### data.set.basic ####
-`set α` a set is defined as a predicate, i.e. a function ` α → Prop`. The notation used is ` {n : ℕ | 4 ≤ n}` for the set of naturals greater than or equal to 4. Sets can be infinite, and can only contain elements of the same type.
+`set α`. A set is defined as a predicate, i.e. a function `α → Prop`. The notation used is `{n : ℕ | 4 ≤ n}` for the set of naturals greater than or equal to 4. Sets can be infinite, and can only contain elements of the same type.
 
-A subtype is similar to a set in that it is defined by a predicate. The notation used is `{n : ℕ // 4 ≤ n}` for the type of naturals greater than or equal to 4. However, a subtype is a type rather than a set, and the elements the aforementioned subtype do not have type ℕ, they have type `{n : ℕ // 4 ≤ n}`. This means that addition is not defined on this type, and equality between naturals and this type is also undefined. However it is possible to coerce an element of this subtype back into a natural, in the same way that a natural can be coerced into an integer, and then addition and equality behave as normal (see TPIL, chapter 6.7 for more on coercions). To construct an element of a subtype of α, you need an element of α and a proof that it satisfies the predicate.
+A subtype is similar to a set in that it is defined by a predicate. The notation used is `{n : ℕ // 4 ≤ n}` for the type of naturals greater than or equal to 4. However, a subtype is a type rather than a set, and the elements the aforementioned subtype do not have type `ℕ`, they have type `{n : ℕ // 4 ≤ n}`. This means that addition is not defined on this type, and equality between naturals and this type is also undefined. However it is possible to coerce an element of this subtype back into a natural, in the same way that a natural can be coerced into an integer, and then addition and equality behave as normal (see TPIL, chapter 6.7 for more on coercions). To construct an element of a subtype of α, you need an element of α and a proof that it satisfies the predicate, `4` and ``le_refl 4`` in the example below.
 ```lean
 def x : {n : ℕ // 4 ≤ n} := ⟨4, le_refl 4⟩
 example : ↑x + 6 = 10 := rfl
 ```
-In the first example 4 is the natural and `le_refl 4` is the proof that `4 ≤ 4`. (see TPIL, chapter 7.2 for more on inductive types)
 
 Any set can be used where a type is expected, in which case the set will be coerced into the corresponding subtype.
 ```lean

@@ -2,7 +2,7 @@
 
 ### lists ###
 #### data.list.basic ####
-`list α` is the type of lists of elements of type re finite and ordered, and can contain duplicates. Lists can only contain elements of the same type.
+`list α` is the type of lists of elements of type α. Lists are finite and ordered, and can contain duplicates. Lists can only contain elements of the same type. Lists are constructed using the cons function, which appends an elements of α to the top of a list. Lists are discussed in more detail in TPIL, chapter 7.5
 
 `[1, 1, 2, 4] ≠ [1, 2, 1, 4]`
 
@@ -10,7 +10,7 @@
 
 ### multisets ###
 #### data.multiset #####
-`multiset α` is the type of lists of elements of type α. Multisets are finite and can contain duplicates, but are not ordered. They are defined as the quotient of lists over the `perm` equivalence relation. Multisets can only contain elements of the same type.
+`multiset α` is the type of multisets of elements of type α. Multisets are finite and can contain duplicates, but are not ordered. They are defined as the quotient of lists over the `perm` equivalence relation. Multisets can only contain elements of the same type.
 
 `{1, 1, 2, 4} = {1, 2, 1, 4}`
 
@@ -18,7 +18,11 @@
 
 ### finsets ###
 #### data.finset ####
-`finset α` is the type of lists of elements of type α. A finset is contructed from a multiset and a proof that the multiset contains no duplicates. Finsets are finite. Finsets can only contain elements of the same type.
+`finset α` is the type of unordered lists of distinct elements of type α. A finset is contructed from a multiset and a proof that the multiset contains no duplicates. Finsets are finite. Finsets can only contain elements of the same type.
+
+`{1, 1, 2, 4} = {1, 2, 1, 4}`
+
+`{1, 1, 2, 4} = {1, 2, 4}`
 
 ### sets and subtypes ###
 #### data.set.basic ####
@@ -29,10 +33,9 @@ A subtype is similar to a set in that it is defined by a predicate. The notation
 def x : {n : ℕ // 4 ≤ n} := ⟨4, le_refl 4⟩
 lemma four_add_six : ↑x + 6 = 10 := rfl
 ```
-In the first example 4 is the natural and `le_refl 4` is the proof that 4 ≤ 4.
+In the first example 4 is the natural and `le_refl 4` is the proof that 4 ≤ 4. (see TPIL, chapter 7.2 for more on inductive types)
 
 Any set can be used where a type is expected, in which case the set will be coerced into a subtype.
-
 ```lean
 def S : set ℕ := {n : ℕ | 4 ≤ n}
 example : ∀ n : S, 4 ≤ (n : ℕ) := λ ⟨n, hn⟩, hn

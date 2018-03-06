@@ -66,5 +66,10 @@ Using `classical.choice`, one can produce an object of type `fintype s` from a p
 
 ### cardinals ###
 There are three functions `finset.card`, `fintype.card` and `multiset.card`, which refer to the sizes of finsets, multisets and finite types. For finite cardinals of sets, `fintype.card` can be used, given a proof that the set is finite.
+```lean
+example : ∀ n : ℕ, fintype.card (fin n) = n := fintype.card_fin
+example : ∀ n : ℕ, finset.card (finset.range n) = n := finset.card_range
+```
+Here, `fin n` is the type of naturals less than n, and `finset.range n` is the finset of naturals less than n.
 
 `set_theory.cardinal` contains theory on infinite cardinals

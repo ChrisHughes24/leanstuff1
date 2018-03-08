@@ -31,11 +31,11 @@ end
 end sum_range
 
 theorem binomial [comm_semiring α] (x y : α) : ∀ n : ℕ,
-    (x + y)^n = (λ m, x^m * y^(n - m) * choose n m) ∑ succ n :=
+    (x + y)^n = (λ m, x^m * y^(n - m) * choose n m) ∑ succ n
 | 0        := by simp
 | (succ n) :=
 begin
-  rw [_root_.pow_succ, hi, add_mul, finset.mul_sum, finset.mul_sum, sum_range_succ, sum_range_succ',
+  rw [_root_.pow_succ, binomial, add_mul, finset.mul_sum, finset.mul_sum, sum_range_succ, sum_range_succ',
       sum_range_succ, sum_range_succ', add_assoc, ← add_assoc (_ ∑ n), ← finset.sum_add_distrib],
   have h₁ : x * (x^n * y^(n - n) * choose n n) = x^succ n * y^(succ n - succ n)
       * choose (succ n) (succ n) :=

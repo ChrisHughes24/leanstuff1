@@ -27,16 +27,14 @@ have  h₂ : y * (x^0 * y^(n - 0) * choose n 0) = x^0 * y^(succ n - 0) * choose 
 have h₃ : (λ m, x * (x^m * y^(n - m) * choose n m) + y * (x^succ m * y^(n - succ m)
     * choose n (succ m))) ∑ n 
     = (λ m, x^succ m * y^(succ n - succ m) * ↑(choose (succ n) (succ m))) ∑ n := 
-  finset.sum_congr rfl 
-    begin 
-      assume m hm,
+  finset.sum_congr rfl $ λ m hm, begin 
       rw finset.mem_range at hm,
       rw [← mul_assoc y, ← mul_assoc y, mul_right_comm y, ← _root_.pow_succ, add_one, ← succ_sub hm],
       simp [succ_sub_succ, _root_.pow_succ, choose_succ_succ, mul_add, mul_comm, 
           mul_assoc, mul_left_comm]
     end,
 by rw [_root_.pow_succ, add_pow, add_mul, finset.mul_sum, finset.mul_sum, sum_range_succ, sum_range_succ',
-      sum_range_succ, sum_range_succ', add_assoc, ← add_assoc (_ ∑ n), ← finset.sum_add_distrib, h₁, h₂, h₃]
+    sum_range_succ, sum_range_succ', add_assoc, ← add_assoc (_ ∑ n), ← finset.sum_add_distrib, h₁, h₂, h₃]
 
 theorem missing [comm_semiring α] (n : ℕ) (f : ℕ → α) (e : ℕ → ℕ) (r : ℕ → α)
     (s : α) : (∀ i : ℕ, i ≤ n → (f i) ^ (e i) * s = 0) →

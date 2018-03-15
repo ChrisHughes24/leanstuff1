@@ -49,7 +49,7 @@ $ λ n hi h, begin
   rw mem_range at hm,
   rw [sum_range_succ e, add_comm (e _)],
   cases decidable.em (m ≤ e (succ n)) with hm' hm',
-  { rw [nat.add_sub_assoc hm', _root_.pow_add], 
+  { rw [nat.add_sub_assoc hm', _root_.pow_add],
     simp only [mul_assoc, mul_left_comm ((λ (i : ℕ), f i * r i) ∑ succ n ^ e ∑ succ n)],
     rw hi (λ i hi, h i (le_succ_of_le hi)),
     simp },
@@ -57,4 +57,12 @@ $ λ n hi h, begin
     rw [← nat.add_sub_cancel'(le_of_lt hm'), _root_.pow_add, mul_pow],
     simp only [mul_assoc, mul_left_comm (f (succ n) ^ e (succ n)), h],
     simp }
+end
+
+theorem missing1 [comm_semiring α] (n : ℕ) (f : ℕ → α) (e : ℕ → ℕ) (r : ℕ → α)
+    (s : α) : (∀ i : ℕ, i < n → (f i) ^ (e i) * s = 0) → 
+    sum (range n) (λ i, f i * r i) = 1 → s = 0 :=
+nat.cases_on n (λ h₁ (h₂ : 0 = 1), mul_zero s ▸ h₂.symm ▸ (mul_one s).symm) $ λ n h₁ h₂, begin
+  have := missing n f e r s (λ i hi, h₁ i (lt_succ_of_le hi)),
+  rwa [sum_range_succ e, _root_.pow_add, h₂, one_pow, one_pow, one_mul, one_mul] at this,
 end

@@ -39,8 +39,8 @@ by rw [_root_.pow_succ, add_pow, add_mul, finset.mul_sum, finset.mul_sum, sum_ra
       sum_range_succ, sum_range_succ', add_assoc, ← add_assoc (_ ∑ n), ← finset.sum_add_distrib, h₁, h₂, h₃]
 
 theorem missing [comm_semiring α] (n : ℕ) (f : ℕ → α) (e : ℕ → ℕ) (r : ℕ → α)
-  (s : α) : (∀ i : ℕ, i ≤ n → (f i) ^ (e i) * s = 0) →
-  (sum (range (succ n)) (λ i, f i * r i)) ^ (sum (range (succ n)) e) * s = 0 :=
+    (s : α) : (∀ i : ℕ, i ≤ n → (f i) ^ (e i) * s = 0) →
+    (sum (range (succ n)) (λ i, f i * r i)) ^ (sum (range (succ n)) e) * s = 0 :=
 nat.rec_on n (λ h, by simp [mul_pow, mul_right_comm, h 0 (le_refl _)])
 $ λ n hi h, begin 
   rw [sum_range_succ, add_pow, sum_mul, ← @sum_const_zero _ _ (range (succ (e ∑ succ (succ n))))],
@@ -48,13 +48,12 @@ $ λ n hi h, begin
   assume m hm,
   rw mem_range at hm,
   rw [sum_range_succ e, add_comm (e _)],
-  cases decidable.em (m ≤ e (succ n)) with hm' hm',
+  cases le_total m (e (succ n)) with hm' hm',
   { rw [nat.add_sub_assoc hm', _root_.pow_add],
     simp only [mul_assoc, mul_left_comm ((λ (i : ℕ), f i * r i) ∑ succ n ^ e ∑ succ n)],
     rw hi (λ i hi, h i (le_succ_of_le hi)),
     simp },
-  { replace hm' := lt_of_not_ge hm',
-    rw [← nat.add_sub_cancel'(le_of_lt hm'), _root_.pow_add, mul_pow],
+  { rw [← nat.add_sub_cancel' hm', _root_.pow_add, mul_pow],
     simp only [mul_assoc, mul_left_comm (f (succ n) ^ e (succ n)), h],
     simp }
 end

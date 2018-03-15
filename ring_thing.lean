@@ -44,12 +44,9 @@ theorem missing [comm_semiring α] (n : ℕ) (f : ℕ → α) (e : ℕ → ℕ) 
 nat.rec_on n (λ h, by simp [mul_pow, mul_right_comm, h 0 (le_refl _)])
 $ λ n hi h, begin 
   rw [sum_range_succ, add_pow, sum_mul, ← @sum_const_zero _ _ (range (succ (e ∑ succ (succ n))))],
-  refine finset.sum_congr rfl _,
-  assume m hm,
-  rw mem_range at hm,
-  rw [sum_range_succ e, add_comm (e _)],
+  refine finset.sum_congr rfl (λ m hm, _),
   cases le_total m (e (succ n)) with hm' hm',
-  { rw [nat.add_sub_assoc hm', _root_.pow_add],
+  { rw [sum_range_succ e, add_comm (e _), nat.add_sub_assoc hm', _root_.pow_add],
     simp only [mul_assoc, mul_left_comm ((λ (i : ℕ), f i * r i) ∑ succ n ^ e ∑ succ n)],
     rw hi (λ i hi, h i (le_succ_of_le hi)),
     simp },

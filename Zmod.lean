@@ -156,7 +156,7 @@ quotient.induction_on a (λ a (ha : ¬⟦a⟧ = ⟦0⟧),
 
 
 def Zmod_prime_field {p : ℕ} (hp : nat.prime p) : field (Zmod p) :=
-{ inv := inv_aux,
+{ inv := has_inv.inv,
   zero_ne_one := λ h, 
     let h : (0 : ℤ) % p = 1 % p := quotient.exact h in
     begin 
